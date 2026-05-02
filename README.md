@@ -8,6 +8,8 @@ Implemented:
 - Core model classes for puzzle, board, position, direction, and tile type
 - Text input parser with validation and clear error messages
 - Uniform Cost Search solver
+- Greedy Best First Search solver with H1/H2/H3
+- A* solver with H1/H2/H3
 
 Compile:
 
@@ -28,6 +30,8 @@ java -cp bin Main test\stage4_simple_no_checkpoint.txt
 java -cp bin Main test\stage4_checkpoint_vs_goal.txt
 java -cp bin Main test\stage4_weighted_greedy_trap.txt
 ```
+
+For Stage 5, choose `A*` when prompted and then choose `H1`, `H2`, or `H3`.
 
 Run validation smoke test:
 

@@ -2,7 +2,8 @@ package solver;
 
 public enum SearchAlgorithm {
     UCS,
-    GBFS;
+    GBFS,
+    ASTAR;
 
     public static SearchAlgorithm fromInput(String value) {
         if (value == null) {
@@ -15,6 +16,16 @@ public enum SearchAlgorithm {
         if (normalized.equals("GBFS")) {
             return GBFS;
         }
-        throw new IllegalArgumentException("Unknown algorithm: " + value + ". Use UCS or GBFS.");
+        if (normalized.equals("A*") || normalized.equals("ASTAR") || normalized.equals("A_STAR")) {
+            return ASTAR;
+        }
+        throw new IllegalArgumentException("Unknown algorithm: " + value + ". Use UCS, GBFS, or A*.");
+    }
+
+    public String getDisplayName() {
+        if (this == ASTAR) {
+            return "A*";
+        }
+        return name();
     }
 }

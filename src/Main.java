@@ -2,6 +2,7 @@ import model.Position;
 import model.Puzzle;
 import parser.InvalidPuzzleException;
 import parser.PuzzleParser;
+import solver.AStarSolver;
 import solver.GreedyBestFirstSolver;
 import solver.Heuristic;
 import solver.HeuristicType;
@@ -25,7 +26,7 @@ public class Main {
             Puzzle puzzle = new PuzzleParser().parse(Paths.get(inputPath));
             SearchAlgorithm algorithm = promptForAlgorithm(scanner);
             HeuristicType heuristicType = null;
-            if (algorithm == SearchAlgorithm.GBFS) {
+            if (usesHeuristic(algorithm)) {
                 heuristicType = promptForHeuristic(scanner);
             }
 
@@ -59,12 +60,12 @@ public class Main {
     }
 
     private static SearchAlgorithm promptForAlgorithm(Scanner scanner) {
-        System.out.print("Pilih algoritma (UCS/GBFS): ");
+        System.out.print("Pilih algoritma (UCS/GBFS/A*): ");
         return SearchAlgorithm.fromInput(scanner.nextLine());
     }
 
     private static HeuristicType promptForHeuristic(Scanner scanner) {
-        System.out.print("Pilih heuristic (H0/H1/H2/H3): ");
+        System.out.print("Pilih heuristic (H1/H2/H3): ");
         return HeuristicType.fromInput(scanner.nextLine());
     }
 
@@ -109,7 +110,14 @@ public class Main {
         }
 
         Heuristic heuristic = Heuristics.create(heuristicType, puzzle);
-        return new GreedyBestFirstSolver(heuristic).solve(puzzle);
+        if (algorithm == SearchAlgorithm.GBFS) {
+            return new GreedyBestFirstSolver(heuristic).solve(puzzle);
+        }
+        return new AStarSolver(heuristic).solve(puzzle);
+    }
+
+    private static boolean usesHeuristic(SearchAlgorithm algorithm) {
+        return algorithm == SearchAlgorithm.GBFS || algorithm == SearchAlgorithm.ASTAR;
     }
 
     private static void printSearchResult(
@@ -118,12 +126,20 @@ public class Main {
             SearchAlgorithm algorithm,
             HeuristicType heuristicType
     ) {
-        System.out.println("Algorithm: " + algorithm);
+        System.out.println("Algorithm: " + algorithm.getDisplayName());
         if (algorithm == SearchAlgorithm.GBFS) {
             System.out.println("Heuristic: " + heuristicType + " - " + Heuristics.describe(heuristicType));
             System.out.println("Note: GBFS uses heuristics only to guide search; optimality is not guaranteed.");
+            System.out.println("Evaluation: f(n) = h(n), where h(n) is estimated remaining cost.");
             System.out.println("Tie-break order: generated moves U, D, L, R; queue ties use lower h/f, lower g, then insertion order.");
+        } else if (algorithm == SearchAlgorithm.ASTAR) {
+            System.out.println("Heuristic: " + heuristicType + " - " + Heuristics.describe(heuristicType));
+            System.out.println("Evaluation: f(n) = g(n) + h(n), where g(n) is accumulated movement cost.");
+            System.out.println("Note: A* is guaranteed optimal only with an admissible heuristic and correct repeated-state handling.");
+            System.out.println("Note: H1/H2/H3 are not claimed universally admissible for every ice sliding case.");
+            System.out.println("Tie-break order: generated moves U, D, L, R; queue ties use lower f, lower h, lower g, then insertion order.");
         } else {
+            System.out.println("Evaluation: f(n) = g(n), where g(n) is accumulated movement cost.");
             System.out.println("Tie-break order: generated moves U, D, L, R; queue ties use lower g, then insertion order.");
         }
         System.out.println("Solution found: " + (result.isFound() ? "yes" : "no"));

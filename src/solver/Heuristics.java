@@ -13,14 +13,6 @@ public final class Heuristics {
     public static Heuristic create(HeuristicType type, Puzzle puzzle) {
         final int minPassableTileCost = findMinPassableTileCost(puzzle);
 
-        if (type == HeuristicType.H0) {
-            return new BasicHeuristic(type, puzzle, minPassableTileCost) {
-                @Override
-                public int estimate(Puzzle puzzle, SearchState state) {
-                    return 0;
-                }
-            };
-        }
         if (type == HeuristicType.H1) {
             return new BasicHeuristic(type, puzzle, minPassableTileCost) {
                 @Override
@@ -62,9 +54,6 @@ public final class Heuristics {
     }
 
     public static String describe(HeuristicType type) {
-        if (type == HeuristicType.H0) {
-            return "H0: always 0 baseline.";
-        }
         if (type == HeuristicType.H1) {
             return "H1: Manhattan(current, goal) * minPassableTileCost; ignores remaining checkpoints.";
         }

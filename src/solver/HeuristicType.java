@@ -1,7 +1,6 @@
 package solver;
 
 public enum HeuristicType {
-    H0,
     H1,
     H2,
     H3;
@@ -16,6 +15,6 @@ public enum HeuristicType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown heuristic: " + value + ". Use H0, H1, H2, or H3.");
+        throw new IllegalArgumentException("Unknown heuristic: " + value + ". Use H1, H2, or H3.");
     }
 }
