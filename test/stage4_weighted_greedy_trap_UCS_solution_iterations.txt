@@ -1,0 +1,37 @@
+Input file: test\stage4_weighted_greedy_trap.txt
+Algorithm: UCS
+Solusi Yang Ditemukan: DRU
+Cost dari Solusi: 8
+Waktu eksekusi: 7 ms
+Banyak iterasi: 4 iterasi
+
+Expanded iteration snapshots
+============================
+Iteration 1 | nextCheckpointIndex=0
+XXXXXXX
+XZ***OX
+X*****X
+X*****X
+XXXXXXX
+
+Iteration 2 | nextCheckpointIndex=0
+XXXXXXX
+X****OX
+X*****X
+XZ****X
+XXXXXXX
+
+Iteration 3 | nextCheckpointIndex=0
+XXXXXXX
+X****OX
+X*****X
+X****ZX
+XXXXXXX
+
+Iteration 4 | nextCheckpointIndex=0
+XXXXXXX
+X****ZX
+X*****X
+X*****X
+XXXXXXX
+

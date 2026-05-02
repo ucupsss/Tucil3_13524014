@@ -1,3 +1,4 @@
+import cli.PlaybackController;
 import model.Position;
 import model.Puzzle;
 import parser.InvalidPuzzleException;
@@ -12,7 +13,11 @@ import solver.SearchNode;
 import solver.SearchResult;
 import solver.SearchState;
 import solver.UniformCostSolver;
+import util.BoardRenderer;
+import util.SolutionWriter;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
@@ -21,9 +26,10 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String inputPath = promptForInputPath(args, scanner);
+        Path inputFilePath = Paths.get(inputPath);
 
         try {
-            Puzzle puzzle = new PuzzleParser().parse(Paths.get(inputPath));
+            Puzzle puzzle = new PuzzleParser().parse(inputFilePath);
             SearchAlgorithm algorithm = promptForAlgorithm(scanner);
             HeuristicType heuristicType = null;
             if (usesHeuristic(algorithm)) {
@@ -32,7 +38,7 @@ public class Main {
 
             System.out.println("Input parsed successfully.");
             System.out.println();
-            System.out.println(renderState(puzzle, new SearchState(puzzle.getStartPosition(), 0)));
+            System.out.println(BoardRenderer.renderState(puzzle, new SearchState(puzzle.getStartPosition(), 0)));
             System.out.println();
             System.out.println("Start: " + puzzle.getStartPosition());
             System.out.println("Goal: " + puzzle.getGoalPosition());
@@ -42,6 +48,8 @@ public class Main {
 
             SearchResult result = runSearch(puzzle, algorithm, heuristicType);
             printSearchResult(puzzle, result, algorithm, heuristicType);
+            offerPlayback(scanner, puzzle, result);
+            offerSave(scanner, inputFilePath, puzzle, algorithm, heuristicType, result);
         } catch (InvalidPuzzleException exception) {
             System.err.println("Invalid input: " + exception.getMessage());
             System.exit(1);
@@ -142,61 +150,112 @@ public class Main {
             System.out.println("Evaluation: f(n) = g(n), where g(n) is accumulated movement cost.");
             System.out.println("Tie-break order: generated moves U, D, L, R; queue ties use lower g, then insertion order.");
         }
-        System.out.println("Solution found: " + (result.isFound() ? "yes" : "no"));
-        System.out.println("Solution string: " + (result.isFound() ? result.getSolutionMoves() : "-"));
-        System.out.println("Cost: " + (result.isFound() ? result.getTotalCost() : "-"));
-        System.out.println("Execution time: " + result.getExecutionTimeMillis() + " ms");
-        System.out.println("Iterations: " + result.getIterationCount());
+        System.out.println("Solusi Yang Ditemukan : " + (result.isFound() ? result.getSolutionMoves() : "-"));
+        System.out.println("Cost dari Solusi : " + (result.isFound() ? result.getTotalCost() : "-"));
 
         if (!result.isFound()) {
+            System.out.println("Waktu eksekusi: " + result.getExecutionTimeMillis() + " ms");
+            System.out.println("Banyak iterasi yang dilakukan: " + result.getIterationCount() + " iterasi");
             return;
         }
 
         List<SearchNode> path = result.getSolutionPath();
         System.out.println();
         System.out.println("Initial");
-        System.out.println(renderState(puzzle, path.get(0).getState()));
+        System.out.println(BoardRenderer.renderState(puzzle, path.get(0).getState()));
 
         for (int index = 1; index < path.size(); index++) {
             SearchNode node = path.get(index);
             System.out.println();
             System.out.println("Step " + index + " : " + node.getMoveFromParent().getCode());
-            System.out.println(renderState(puzzle, node.getState()));
+            System.out.println(BoardRenderer.renderState(puzzle, node.getState()));
+        }
+
+        System.out.println();
+        System.out.println("Waktu eksekusi: " + result.getExecutionTimeMillis() + " ms");
+        System.out.println("Banyak iterasi yang dilakukan: " + result.getIterationCount() + " iterasi");
+    }
+
+    private static void offerPlayback(Scanner scanner, Puzzle puzzle, SearchResult result) {
+        if (!result.isFound()) {
+            return;
+        }
+        if (askYesNo(scanner, "Apakah Anda ingin melakukan playback? (Ya/Tidak): ")) {
+            new PlaybackController(puzzle, result, scanner).run();
         }
     }
 
-    private static String renderState(Puzzle puzzle, SearchState state) {
-        StringBuilder builder = new StringBuilder();
-        Position actorPosition = state.getActorPosition();
-        int completedCheckpointCount = state.getNextCheckpointIndex();
-
-        for (int row = 0; row < puzzle.getRowCount(); row++) {
-            if (row > 0) {
-                builder.append(System.lineSeparator());
-            }
-            for (int col = 0; col < puzzle.getColCount(); col++) {
-                Position position = new Position(row, col);
-                if (position.equals(actorPosition)) {
-                    builder.append('Z');
-                } else if (position.equals(puzzle.getStartPosition())) {
-                    builder.append('*');
-                } else if (isCompletedCheckpoint(puzzle, position, completedCheckpointCount)) {
-                    builder.append('*');
-                } else {
-                    builder.append(puzzle.getBoard().getTile(position));
-                }
-            }
+    private static void offerSave(
+            Scanner scanner,
+            Path inputPath,
+            Puzzle puzzle,
+            SearchAlgorithm algorithm,
+            HeuristicType heuristicType,
+            SearchResult result
+    ) {
+        if (!askYesNo(scanner, "Apakah Anda ingin menyimpan solusi? (Ya/Tidak): ")) {
+            return;
         }
 
-        return builder.toString();
+        System.out.print("Masukan path output .txt, kosongkan untuk default di folder test/: ");
+        String output = scanner.nextLine().trim();
+        Path solutionPath = output.isEmpty()
+                ? defaultSolutionPath(inputPath, algorithm, heuristicType)
+                : Paths.get(output);
+        Path iterationPath = iterationPathFor(solutionPath);
+
+        SolutionWriter writer = new SolutionWriter();
+        try {
+            writer.writeSolution(solutionPath, inputPath, puzzle, algorithm, heuristicType, result);
+            writer.writeExploredSnapshots(iterationPath, inputPath, puzzle, algorithm, heuristicType, result);
+            System.out.println("Solusi disimpan pada " + solutionPath);
+            System.out.println("Snapshot iterasi disimpan pada " + iterationPath);
+        } catch (IOException exception) {
+            System.out.println("Gagal menyimpan file: " + exception.getMessage());
+        }
     }
 
-    private static boolean isCompletedCheckpoint(Puzzle puzzle, Position position, int completedCheckpointCount) {
-        for (int index = 0; index < completedCheckpointCount; index++) {
-            if (puzzle.getCheckpointPositions().get(index).equals(position)) {
+    private static boolean askYesNo(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt + " ");
+            String answer = scanner.nextLine().trim().toLowerCase();
+            if (answer.equals("ya") || answer.equals("y") || answer.equals("yes")) {
                 return true;
             }
+            if (answer.equals("tidak") || answer.equals("t") || answer.equals("no") || answer.equals("n")) {
+                return false;
+            }
+            System.out.println("Input tidak valid. Jawab Ya atau Tidak.");
         }
-        return false;
+    }
+
+    private static Path defaultSolutionPath(Path inputPath, SearchAlgorithm algorithm, HeuristicType heuristicType) {
+        StringBuilder fileName = new StringBuilder();
+        fileName.append(stripExtension(inputPath.getFileName().toString()))
+                .append("_")
+                .append(algorithm.getDisplayName().replace("*", "star"));
+        if (heuristicType != null) {
+            fileName.append("_").append(heuristicType);
+        }
+        fileName.append("_solution.txt");
+        return Paths.get("test", fileName.toString());
+    }
+
+    private static Path iterationPathFor(Path solutionPath) {
+        String fileName = solutionPath.getFileName().toString();
+        String base = stripExtension(fileName);
+        Path parent = solutionPath.getParent();
+        if (parent == null) {
+            return Paths.get(base + "_iterations.txt");
+        }
+        return parent.resolve(base + "_iterations.txt");
+    }
+
+    private static String stripExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex <= 0) {
+            return fileName;
+        }
+        return fileName.substring(0, dotIndex);
     }
 }
