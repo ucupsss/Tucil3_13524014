@@ -1,0 +1,9 @@
+target/
+*.class
+
+# Maven/IDE metadata
+.classpath
+.project
+.settings/
+.idea/
+*.iml

@@ -1,0 +1,43 @@
+Input file: D:\ITB\sem 4\STIMA\Tucil3_13524014\test\test1.txt
+Algorithm: UCS
+Solusi Yang Ditemukan: URD
+Cost dari Solusi: 10
+Waktu eksekusi: 0 ms
+Banyak iterasi: 6 iterasi
+
+Initial
+XXXXXXX
+X*****X
+X*****X
+XZ****X
+X*****X
+X****OX
+XXXXXXX
+
+Step 1 : U
+XXXXXXX
+XZ****X
+X*****X
+X*****X
+X*****X
+X****OX
+XXXXXXX
+
+Step 2 : R
+XXXXXXX
+X****ZX
+X*****X
+X*****X
+X*****X
+X****OX
+XXXXXXX
+
+Step 3 : D
+XXXXXXX
+X*****X
+X*****X
+X*****X
+X*****X
+X****ZX
+XXXXXXX
+

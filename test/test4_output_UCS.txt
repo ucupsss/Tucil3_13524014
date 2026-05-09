@@ -1,0 +1,21 @@
+Input file: D:\ITB\sem 4\STIMA\Tucil3_13524014\test\test4.txt
+Algorithm: UCS
+Solusi Yang Ditemukan: R
+Cost dari Solusi: 6
+Waktu eksekusi: 11 ms
+Banyak iterasi: 4 iterasi
+
+Initial
+XXXXXXXXX
+X*******X
+XZ*0*1*OX
+X*******X
+XXXXXXXXX
+
+Step 1 : R
+XXXXXXXXX
+X*******X
+X******ZX
+X*******X
+XXXXXXXXX
+

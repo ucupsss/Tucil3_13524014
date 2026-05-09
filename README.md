@@ -1,126 +1,166 @@
 # Tucil3_13524014
 
-Ice Sliding Puzzle Solver untuk IF2211 Strategi Algoritma.
+Ice Sliding Puzzle Solver untuk Tugas Kecil 3 IF2211 Strategi Algoritma.
 
-Program menyediakan:
-- CLI solver untuk UCS, GBFS, dan A*
-- GUI JavaFX untuk memilih file, memilih algoritma, menjalankan solver, melihat hasil, playback solusi, dan menyimpan hasil
-- Parser input `.txt`
-- Heuristic H1, H2, H3 untuk GBFS dan A*
+Program ini membaca puzzle dari file `.txt`, memvalidasi input, lalu mencari solusi dengan algoritma pathfinding. Permainan menggunakan mekanik es: setelah memilih arah, aktor terus meluncur sampai berhenti tepat sebelum obstacle. Program juga mendukung checkpoint bernomor yang harus dilewati berurutan, lava, traversal cost, playback solusi, penyimpanan hasil, dan GUI JavaFX.
 
-## Requirements
+## Fitur
+
+- Parser dan validator input `.txt`.
+- Solver CLI untuk:
+  - Uniform Cost Search (UCS)
+  - Greedy Best First Search (GBFS)
+  - A* Search
+- Heuristik untuk GBFS dan A*:
+  - H1: Manhattan ke goal
+  - H2: Manhattan ke target wajib berikutnya
+  - H3: rantai Manhattan melalui checkpoint tersisa lalu goal
+- Visualisasi step-by-step di CLI.
+- Playback CLI dengan command sederhana.
+- Simpan solusi dan snapshot iterasi ke file `.txt`.
+- GUI JavaFX untuk memilih file, memilih algoritma/heuristik, menjalankan solver, melihat board, playback, dan menyimpan hasil.
+
+## Requirement
 
 - Java 21
 - Maven
 
-Check installation:
+Cek instalasi:
 
 ```powershell
 java -version
 mvn -version
 ```
 
-JavaFX dependency dikelola oleh Maven melalui `pom.xml`.
+JavaFX tidak perlu diinstal manual karena dependency JavaFX dikelola oleh Maven melalui `pom.xml`.
 
-## Project Structure
-
-Source code memakai layout Maven standar:
+## Struktur Singkat
 
 ```text
-src/main/java/
-  Main.java
-  cli/
-  gui/
-  model/
-  parser/
-  solver/
-  util/
-bin/
-test/
-doc/
-README.md
-pom.xml
+Tucil3_13524014/
+|-- src/main/java/   # Source code Java
+|-- bin/             # Folder keluaran sesuai struktur tugas
+|-- test/            # File input dan output pengujian
+|-- doc/             # Laporan dan gambar laporan
+|-- pom.xml          # Konfigurasi Maven
+`-- README.md        # Dokumentasi program
 ```
 
-Folder `src`, `bin`, `test`, dan `doc` tetap tersedia sesuai struktur tugas.
-
 ## Compile
+
+Jalankan dari root project:
 
 ```powershell
 mvn clean compile
 ```
 
-## Run CLI
+Folder `target/` akan dibuat otomatis oleh Maven sebagai hasil build. Folder ini tidak perlu dipush ke repository.
 
-Interactive:
+## Menjalankan CLI
+
+Mode interaktif:
 
 ```powershell
 mvn exec:java
 ```
 
-With input file argument:
+Dengan argumen file input:
 
 ```powershell
-mvn exec:java "-Dexec.args=test\sample_valid.txt"
+mvn exec:java "-Dexec.args=test\test1.txt"
 ```
 
-Then choose:
-- Algorithm: `UCS`, `GBFS`, or `A*`
-- Heuristic for GBFS/A*: `H1`, `H2`, or `H3`
+Setelah program berjalan:
 
-## Run GUI
+1. Masukkan path file input jika belum diberikan lewat argumen.
+2. Pilih algoritma: `UCS`, `GBFS`, atau `A*`.
+3. Jika memilih `GBFS` atau `A*`, pilih heuristik: `H1`, `H2`, atau `H3`.
+4. Program menampilkan solusi, total cost, waktu eksekusi, jumlah iterasi, dan visualisasi board tiap step.
+5. Pilih apakah ingin playback.
+6. Pilih apakah ingin menyimpan solusi.
+
+Command playback CLI:
+
+```text
+n          next step
+p          previous step
+j <nomor>  jump ke step tertentu, contoh: j 3
+q          keluar dari playback
+```
+
+## Menjalankan GUI
 
 ```powershell
 mvn javafx:run
 ```
 
-GUI usage:
-1. Click `Choose File`.
-2. Select a `.txt` puzzle input.
-3. Choose algorithm: `UCS`, `GBFS`, or `A*`.
-4. Choose heuristic for `GBFS` or `A*`.
-5. Click `Solve`.
-6. Use playback controls:
+Cara menggunakan GUI:
+
+1. Klik `Choose File`.
+2. Pilih file puzzle `.txt`.
+3. Pilih algoritma: `UCS`, `GBFS`, atau `A*`.
+4. Pilih heuristik untuk `GBFS` atau `A*`.
+5. Klik `Solve`.
+6. Gunakan tombol playback:
    - `Previous`
    - `Play/Pause`
    - `Next`
    - speed slider
-   - jump-to-step input
-7. Click `Save Results` to save solution and expanded iteration snapshots.
+   - jump-to-step
+7. Klik `Save Results` untuk menyimpan solusi dan snapshot iterasi.
 
-The heuristic dropdown is disabled for UCS because UCS uses `f(n) = g(n)`.
+Dropdown heuristik otomatis dinonaktifkan saat memilih UCS karena UCS tidak memakai heuristik.
 
-## CLI Playback
+## Format Input
 
-Raw arrow-key handling is not portable in standard Java console input, so CLI playback uses simple commands:
+Format file input:
 
-- `n` = next step
-- `p` = previous step
-- `j <step>` = jump to step number, for example `j 3`
-- `q` = quit playback
-
-When saving a solution in CLI, press Enter on the output path prompt to use the default path under `test/`.
-
-## Algorithms
-
-- UCS uses `f(n) = g(n)`.
-- GBFS uses `f(n) = h(n)`.
-- A* uses `f(n) = g(n) + h(n)`.
-
-`g(n)` is accumulated movement cost. `h(n)` is estimated remaining cost.
-
-Available heuristics:
-- H1: Manhattan distance from current position to goal multiplied by minimum passable tile cost.
-- H2: Manhattan distance from current position to the next mandatory target multiplied by minimum passable tile cost.
-- H3: Manhattan chain through remaining checkpoints and then goal multiplied by minimum passable tile cost.
-
-H1, H2, and H3 are not claimed universally admissible for every ice sliding case. Compare A* results against UCS as the optimal-cost baseline.
-
-## Test Cases
-
-```powershell
-mvn exec:java "-Dexec.args=test\sample_valid.txt"
-mvn exec:java "-Dexec.args=test\stage4_simple_no_checkpoint.txt"
-mvn exec:java "-Dexec.args=test\stage4_checkpoint_vs_goal.txt"
-mvn exec:java "-Dexec.args=test\stage4_weighted_greedy_trap.txt"
+```text
+N M
+<N baris layout board>
+<N baris traversal cost, masing-masing M integer>
 ```
+
+Karakter board:
+
+```text
+*  jalan es
+X  obstacle/wall
+L  lava
+Z  start
+O  goal
+0-9 checkpoint berurutan
+```
+
+Contoh:
+
+```text
+5 9
+XXXXXXXXX
+X*******X
+XZ*0*1*OX
+X*******X
+XXXXXXXXX
+999 999 999 999 999 999 999 999 999
+999 1   1   1   1   1   1   1   999
+999 1   1   1   1   1   1   1   999
+999 1   1   1   1   1   1   1   999
+999 999 999 999 999 999 999 999 999
+```
+
+## Algoritma
+
+- UCS menggunakan `f(n) = g(n)`.
+- GBFS menggunakan `f(n) = h(n)`.
+- A* menggunakan `f(n) = g(n) + h(n)`.
+
+`g(n)` adalah akumulasi movement cost dari start sampai state sekarang. `h(n)` adalah estimasi biaya tersisa berdasarkan heuristik.
+
+Program memakai `PriorityQueue` dan `bestG` untuk menghindari ekspansi state yang lebih buruk atau setara secara berlebihan. Identitas state terdiri dari posisi aktor dan `nextCheckpointIndex`.
+
+```
+
+## Author
+
+Yusuf Faishal Listyardi  
+NIM 13524014
