@@ -54,7 +54,7 @@ Jalankan dari root project:
 mvn clean compile
 ```
 
-Folder `target/` akan dibuat otomatis oleh Maven sebagai hasil build. Folder ini tidak perlu dipush ke repository.
+Folder `target/` akan dibuat otomatis oleh Maven sebagai hasil build. Setelah itu jalankan CLI atau GUI sesuai tata cara dibawah ini.
 
 ## Menjalankan CLI
 
